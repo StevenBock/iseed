@@ -51,17 +51,23 @@ class Iseed
 
     /**
      * Generates a seed file.
-     * @param  string   $table
-     * @param  string   $prefix
-     * @param  string   $suffix
-     * @param  string   $database
-     * @param  int      $max
-     * @param  string   $prerunEvent
-     * @param  string   $postunEvent
+     * @param  string $table
+     * @param array $whereClauses
+     * @param  string $prefix
+     * @param  string $suffix
+     * @param  string $database
+     * @param  int $max
+     * @param int $chunkSize
+     * @param null $exclude
+     * @param  string $prerunEvent
+     * @param null $postrunEvent
+     * @param bool $dumpAuto
+     * @param bool $indexed
+     * @param null $orderBy
+     * @param string $direction
      * @return bool
-     * @throws Orangehill\Iseed\TableNotFoundException
      */
-    public function generateSeed($table, $prefix=null, $suffix=null, $database = null, $max = 0, $chunkSize = 0, $exclude = null, $prerunEvent = null, $postrunEvent = null, $dumpAuto = true, $indexed = true, $orderBy = null, $direction = 'ASC')
+    public function generateSeed($table, $whereClauses = [], $prefix=null, $suffix=null, $database = null, $max = 0, $chunkSize = 0, $exclude = null, $prerunEvent = null, $postrunEvent = null, $dumpAuto = true, $indexed = true, $orderBy = null, $direction = 'ASC')
     {
         if (!$database) {
             $database = config('database.default');
@@ -75,7 +81,7 @@ class Iseed
         }
 
         // Get the data
-        $data = $this->getData($table, $max, $exclude, $orderBy, $direction);
+        $data = $this->getData($table, $max, $exclude, $orderBy, $direction, $whereClauses);
 
         // Repack the data
         $dataArray = $this->repackSeedData($data);
@@ -130,13 +136,19 @@ class Iseed
      * @param  string $table
      * @return Array
      */
-    public function getData($table, $max, $exclude = null, $orderBy = null, $direction = 'ASC')
+    public function getData($table, $max, $exclude = null, $orderBy = null, $direction = 'ASC', $whereClauses = [])
     {
         $result = \DB::connection($this->databaseName)->table($table);
 
         if (!empty($exclude)) {
             $allColumns = \DB::connection($this->databaseName)->getSchemaBuilder()->getColumnListing($table);
             $result = $result->select(array_diff($allColumns, $exclude));
+        }
+
+        if (!empty($whereClauses)) {
+            foreach ($whereClauses AS $whereClause) {
+                $result->whereRaw($whereClause);
+            }
         }
 
         if($orderBy) {
