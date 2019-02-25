@@ -67,7 +67,7 @@ class Iseed
      * @param string $direction
      * @return bool
      */
-    public function generateSeed($table, $whereClauses = [], $prefix=null, $suffix=null, $database = null, $max = 0, $chunkSize = 0, $exclude = null, $prerunEvent = null, $postrunEvent = null, $dumpAuto = true, $indexed = true, $orderBy = null, $direction = 'ASC')
+    public function generateSeed($table, $database = null, $max = 0, $whereClauses = [], $prefix=null, $suffix=null, $chunkSize = 0, $exclude = null, $prerunEvent = null, $postrunEvent = null, $dumpAuto = true, $indexed = true, $orderBy = null, $direction = 'ASC')
     {
         if (!$database) {
             $database = config('database.default');
